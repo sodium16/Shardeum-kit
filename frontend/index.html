@@ -1,253 +1,814 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FounderOS | AI Lead Automation</title>
-  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.0/dist/ethers.umd.min.js"></script>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Inter', 'Segoe UI', sans-serif;
-      background: #090b10;
-      color: #f8fafc;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 40px 16px;
-    }
-    header {
-      width: 100%;
-      max-width: 1000px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 20px 30px;
-      background: #111420;
-      border-radius: 16px;
-      border: 1px solid #1e293b;
-      margin-bottom: 30px;
-    }
-    .logo { font-size: 1.5rem; font-weight: 800; color: #8b5cf6; }
-    .logo span { color: #fff; }
-    
-    #connectBtn {
-      padding: 12px 24px;
-      border: none;
-      border-radius: 10px;
-      background: #8b5cf6;
-      color: #fff;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    #connectBtn.connected { background: #10b981; }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FounderOS — AI Lead Intelligence</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.0/dist/ethers.umd.min.js"></script>
+    <style>
+      :root {
+        --bg: #0a0a0f;
+        --surface: #111118;
+        --surface2: #18181f;
+        --border: #2a2a35;
+        --text: #f0f0f5;
+        --muted: #6b6b80;
+        --accent: #e8ff47;
+        --green: #47ffb8;
+        --hot: #ff4757;
+        --warm: #ffa502;
+        --cold: #54a0ff;
+        --font: "Syne", sans-serif;
+        --mono: "Space Mono", monospace;
+      }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--font);
+        min-height: 100vh;
+      }
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image: linear-gradient(
+            rgba(232, 255, 71, 0.03) 1px,
+            transparent 1px
+          ),
+          linear-gradient(90deg, rgba(232, 255, 71, 0.03) 1px, transparent 1px);
+        background-size: 40px 40px;
+        pointer-events: none;
+        z-index: 0;
+      }
 
-    main {
-      width: 100%;
-      max-width: 1000px;
-      display: grid;
-      grid-template-columns: 1.5fr 1fr;
-      gap: 24px;
-    }
+      /* HEADER */
+      header {
+        position: relative;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 18px 40px;
+        border-bottom: 1px solid var(--border);
+        background: rgba(10, 10, 15, 0.9);
+        backdrop-filter: blur(10px);
+      }
+      .logo {
+        font-weight: 800;
+        font-size: 1.3rem;
+        letter-spacing: -0.02em;
+      }
+      .logo span {
+        color: var(--accent);
+      }
+      .hdr-right {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+      .wpill {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 100px;
+        padding: 7px 16px;
+        font-family: var(--mono);
+        font-size: 0.72rem;
+        color: var(--muted);
+      }
+      .wpill .dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--muted);
+        flex-shrink: 0;
+        transition: background 0.3s, box-shadow 0.3s;
+      }
+      .wpill .dot.on {
+        background: var(--green);
+        box-shadow: 0 0 6px var(--green);
+      }
+      #waddr {
+        color: var(--text);
+      }
+      #connectBtn {
+        font-family: var(--font);
+        font-weight: 700;
+        font-size: 0.85rem;
+        padding: 10px 22px;
+        background: var(--accent);
+        color: #0a0a0f;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+      #connectBtn:hover:not(:disabled) {
+        background: #d4eb30;
+        transform: translateY(-1px);
+      }
+      #connectBtn.done {
+        background: transparent;
+        color: var(--green);
+        border: 1px solid var(--green);
+      }
 
-    .panel {
-      background: #111420;
-      border: 1px solid #1e293b;
-      border-radius: 16px;
-      padding: 32px;
-    }
+      /* LAYOUT */
+      .app {
+        position: relative;
+        z-index: 1;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 36px 40px 80px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 28px;
+      }
 
-    h2 { font-size: 1.25rem; margin-bottom: 20px; color: #cbd5e1; }
-    
-    .input-group { margin-bottom: 20px; }
-    label { display: block; font-size: 0.85rem; color: #94a3b8; margin-bottom: 8px; }
-    input, textarea {
-      width: 100%;
-      padding: 12px 16px;
-      background: #090b10;
-      border: 1px solid #334155;
-      border-radius: 8px;
-      color: #fff;
-      font-size: 1rem;
-      outline: none;
-    }
-    input:focus, textarea:focus { border-color: #8b5cf6; }
+      /* CARD */
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 26px;
+      }
+      .tag {
+        font-family: var(--mono);
+        font-size: 0.62rem;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin-bottom: 10px;
+      }
+      .card h2 {
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin-bottom: 20px;
+      }
 
-    .btn-primary {
-      width: 100%;
-      padding: 14px;
-      background: #8b5cf6;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      font-weight: 700;
-      cursor: pointer;
-      font-size: 1rem;
-    }
-    .btn-primary:disabled { background: #334155; cursor: not-allowed; }
+      /* FORM */
+      .frow {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+      .fld label {
+        display: block;
+        font-family: var(--mono);
+        font-size: 0.65rem;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-bottom: 6px;
+      }
+      .fld input,
+      .fld textarea {
+        width: 100%;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 10px 13px;
+        color: var(--text);
+        font-family: var(--font);
+        font-size: 0.88rem;
+        outline: none;
+        transition: border-color 0.2s;
+      }
+      .fld input:focus,
+      .fld textarea:focus {
+        border-color: var(--accent);
+      }
+      .fld textarea {
+        min-height: 88px;
+        resize: vertical;
+      }
+      #analyzeBtn {
+        width: 100%;
+        margin-top: 6px;
+        padding: 13px;
+        background: var(--accent);
+        color: #0a0a0f;
+        border: none;
+        border-radius: 10px;
+        font-family: var(--font);
+        font-weight: 800;
+        font-size: 0.92rem;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+      #analyzeBtn:hover:not(:disabled) {
+        background: #d4eb30;
+        transform: translateY(-2px);
+      }
 
-    .status-card {
-      background: #1e293b;
-      padding: 20px;
-      border-radius: 12px;
-      margin-top: 20px;
-      display: none;
-    }
-    .badge {
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 0.75rem;
-      font-weight: 800;
-      text-transform: uppercase;
-    }
-    .HOT { background: #fee2e2; color: #dc2626; }
-    .WARM { background: #fef3c7; color: #d97706; }
-    .COLD { background: #e0f2fe; color: #0284c7; }
+      /* RESULT BOX */
+      #resultBox {
+        display: none;
+        margin-top: 20px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+      .rhdr {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 13px 17px;
+        border-bottom: 1px solid var(--border);
+      }
+      #rcat {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 0.78rem;
+        padding: 5px 14px;
+        border-radius: 100px;
+      }
+      #rcat.HOT {
+        background: rgba(255, 71, 87, 0.15);
+        color: var(--hot);
+      }
+      #rcat.WARM {
+        background: rgba(255, 165, 2, 0.15);
+        color: var(--warm);
+      }
+      #rcat.COLD {
+        background: rgba(84, 160, 255, 0.15);
+        color: var(--cold);
+      }
+      #rreason {
+        padding: 14px 17px;
+        font-size: 0.87rem;
+        color: #c0c0d0;
+      }
+      #rchain {
+        padding: 11px 17px;
+        background: var(--surface2);
+        border-top: 1px solid var(--border);
+        font-family: var(--mono);
+        font-size: 0.68rem;
+        color: var(--muted);
+      }
 
-    #logList { list-style: none; margin-top: 10px; }
-    .log-item {
-      background: #090b10;
-      padding: 12px;
-      border-radius: 8px;
-      margin-bottom: 10px;
-      font-size: 0.85rem;
-      border-left: 4px solid #8b5cf6;
-    }
-  </style>
-</head>
-<body>
+      /* LOG */
+      #llist {
+        display: flex;
+        flex-direction: column;
+        gap: 9px;
+        max-height: 460px;
+        overflow-y: auto;
+      }
+      .lempty {
+        text-align: center;
+        padding: 40px 20px;
+        color: var(--muted);
+        font-family: var(--mono);
+        font-size: 0.78rem;
+      }
+      .litem {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      .litem.HOT {
+        border-left: 3px solid var(--hot);
+      }
+      .litem.WARM {
+        border-left: 3px solid var(--warm);
+      }
+      .litem.COLD {
+        border-left: 3px solid var(--cold);
+      }
+      .lhead {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 11px 14px;
+        cursor: pointer;
+      }
+      .lbadge {
+        font-family: var(--mono);
+        font-size: 0.62rem;
+        padding: 3px 9px;
+        border-radius: 100px;
+      }
+      .lbadge.HOT {
+        background: rgba(255, 71, 87, 0.15);
+        color: var(--hot);
+      }
+      .lbadge.WARM {
+        background: rgba(255, 165, 2, 0.15);
+        color: var(--warm);
+      }
+      .lbadge.COLD {
+        background: rgba(84, 160, 255, 0.15);
+        color: var(--cold);
+      }
+      .lbody {
+        display: none;
+        padding: 10px 14px;
+        border-top: 1px solid var(--border);
+        font-size: 0.8rem;
+      }
+      .litem.open .lbody {
+        display: block;
+      }
 
-<header>
-  <div class="logo">Founder<span>OS</span></div>
-  <button id="connectBtn" onclick="connectWallet()">Connect Wallet</button>
-</header>
+      /* INSIGHTS */
+      .mgrid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 14px;
+      }
+      .mtile {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 18px;
+        text-align: center;
+      }
+      .mval {
+        font-family: var(--mono);
+        font-size: 1.9rem;
+        font-weight: 700;
+        margin-bottom: 6px;
+      }
+      .mtile.hot .mval {
+        color: var(--hot);
+      }
+      .mtile.warm .mval {
+        color: var(--warm);
+      }
+      .mtile.cold .mval {
+        color: var(--cold);
+      }
+      .mtile.time .mval {
+        color: var(--accent);
+      }
 
-<main>
-  <section class="panel">
-    <h2>Inbound Lead Scoring</h2>
-    <div class="input-group">
-      <label>Lead Name</label>
-      <input type="text" id="leadName" placeholder="e.g. Rahul Sharma">
-    </div>
-    <div class="input-group">
-      <label>Company</label>
-      <input type="text" id="leadCompany" placeholder="e.g. Acme Corp">
-    </div>
-    <div class="input-group">
-      <label>Inquiry Message</label>
-      <textarea id="leadMessage" rows="4" placeholder="How can we help?"></textarea>
-    </div>
-    <button id="processBtn" class="btn-primary" onclick="processLead()">Automate & Log to Shardeum</button>
-
-    <div id="resultPanel" class="status-card">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <span id="resultCategory" class="badge">HOT</span>
-        <span id="resultConfidence" style="font-size:0.9rem; color:#94a3b8;">Confidence: 95%</span>
+      #toast {
+        position: fixed;
+        bottom: 22px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 100px;
+        padding: 9px 22px;
+        font-family: var(--mono);
+        font-size: 0.72rem;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s;
+        z-index: 100;
+      }
+      #toast.show {
+        opacity: 1;
+      }
+      .spin {
+        display: inline-block;
+        width: 13px;
+        height: 13px;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-top-color: currentColor;
+        border-radius: 50%;
+        animation: rot 0.7s linear infinite;
+      }
+      @keyframes rot {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="logo">Founder<span>OS</span></div>
+      <div class="hdr-right">
+        <div class="wpill">
+          <div class="dot" id="wdot"></div>
+          <span id="waddr">Not connected</span>
+        </div>
+        <button id="connectBtn" onclick="connectWallet()">
+          Connect Wallet
+        </button>
       </div>
-      <p id="resultReasoning" style="margin-top:12px; font-size:0.95rem; line-height:1.5;"></p>
-      <div id="txStatus" style="margin-top:15px; font-size:0.8rem; color:#10b981; font-family:monospace;"></div>
+    </header>
+
+    <div class="app">
+      <div class="card">
+        <div class="tag">// 01 — lead inbox</div>
+        <h2>Triage a New Lead</h2>
+        <div class="frow" style="grid-template-columns: 1fr 1fr 1fr">
+          <div class="fld">
+            <label>Name</label>
+            <input id="leadName" type="text" placeholder="Rahul Sharma" />
+          </div>
+          <div class="fld">
+            <label>Company</label>
+            <input id="leadCompany" type="text" placeholder="Acme Corp" />
+          </div>
+          <div class="fld">
+            <label>Email Address</label>
+            <input id="leadEmail" type="email" placeholder="rahul@acme.com" />
+          </div>
+        </div>
+        <div class="fld" style="margin-bottom: 14px">
+          <label>Their Message</label
+          ><textarea id="leadMsg" placeholder="Paste inquiry..."></textarea>
+        </div>
+        <button id="analyzeBtn" onclick="processLead()">Analyze Lead</button>
+
+        <div id="resultBox">
+          <div class="rhdr">
+            <span id="rcat"></span
+            ><span
+              id="rconf"
+              style="
+                font-family: var(--mono);
+                font-size: 0.72rem;
+                color: var(--muted);
+              "
+            ></span>
+          </div>
+          <div id="rreason"></div>
+          <div id="rchain"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="tag">// 02 — on-chain memory</div>
+        <h2 id="lcnt">Decision Log (0)</h2>
+        <div id="llist">
+          <div class="lempty">No decisions yet.</div>
+        </div>
+      </div>
+
+      <div class="card" style="grid-column: 1 / -1">
+        <div class="tag">// 03 — session analytics</div>
+        <h2 style="margin-bottom: 18px">Pipeline Intelligence</h2>
+        <div class="mgrid">
+          <div class="mtile hot">
+            <div class="mval" id="mHot">0</div>
+            <div style="font-size: 0.72rem; color: var(--muted)">Hot Leads</div>
+          </div>
+          <div class="mtile warm">
+            <div class="mval" id="mWarm">0</div>
+            <div style="font-size: 0.72rem; color: var(--muted)">
+              Warm Leads
+            </div>
+          </div>
+          <div class="mtile cold">
+            <div class="mval" id="mCold">0</div>
+            <div style="font-size: 0.72rem; color: var(--muted)">
+              Cold Leads
+            </div>
+          </div>
+          <div class="mtile time">
+            <div class="mval" id="mTime">0m</div>
+            <div style="font-size: 0.72rem; color: var(--muted)">
+              Time Saved
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-  </section>
 
-  <section class="panel">
-    <h2>Blockchain Audit Log</h2>
-    <p style="font-size:0.8rem; color:#64748b; margin-bottom:16px;">Verified decisions recorded on Shardeum Testnet</p>
-    <div id="logList">
-      <p style="color:#475569; font-size:0.9rem;">No logs found yet.</p>
+    <div id="toast"></div>
+
+    <script>
+      // CONFIG
+      const CONTRACT_ADDRESS = "0x114A6B37107878c9428999224B1aB37C1CB4e65E";
+      const SHARDEUM_RPC = "https://api-mezame.shardeum.org";
+      const SHARDEUM_CHAIN_ID = "0x1FB7"; // 8119 in decimal
+      const EXPLORER_URL = "https://explorer-mezame.shardeum.org";
+      const ABI = [
+        "function logDecision(string category, string reasoning, uint8 confidence, string leadData) external returns (uint256)",
+      ];
+
+      let provider,
+        signer,
+        contract,
+        stats = { HOT: 0, WARM: 0, COLD: 0 };
+
+      async function connectWallet() {
+        if (!window.ethereum) return toast("Install MetaMask", "error");
+
+        try {
+          // 1. Request Account Access
+          const accounts = await window.ethereum.request({
+            method: "eth_requestAccounts",
+          });
+
+          // 2. Setup Provider/Signer
+          provider = new ethers.BrowserProvider(window.ethereum);
+
+          // 3. FORCE SWITCH to Shardeum Testnet
+          try {
+            await window.ethereum.request({
+              method: "wallet_switchEthereumChain",
+              params: [{ chainId: SHARDEUM_CHAIN_ID }],
+            });
+          } catch (switchError) {
+            // If the network isn't added to MetaMask, add it
+            if (switchError.code === 4902) {
+              await window.ethereum.request({
+                method: "wallet_addEthereumChain",
+                params: [
+                  {
+                    chainId: SHARDEUM_CHAIN_ID,
+                    chainName: "Shardeum Mezame",
+                    nativeCurrency: {
+                      name: "SHM",
+                      symbol: "SHM",
+                      decimals: 18,
+                    },
+                    rpcUrls: [SHARDEUM_RPC],
+                    blockExplorerUrls: [EXPLORER_URL],
+                  },
+                ],
+              });
+            }
+          }
+
+          signer = await provider.getSigner();
+          contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
+
+          const addr = await signer.getAddress();
+          document.getElementById("waddr").textContent =
+            addr.slice(0, 6) + "…" + addr.slice(-4);
+          document.getElementById("wdot").classList.add("on");
+          document.getElementById("connectBtn").textContent = "Connected ✓";
+          toast("Connected to Shardeum", "success");
+        } catch (e) {
+          console.error(e);
+          toast("Connection Failed", "error");
+        }
+      }
+
+      // REPLACE your analyzeLeadAI function with this
+      async function analyzeLeadAI(message, company) {
+        const API_KEY = "AIzaSyBVU7RVH6KJJCgjRXfWs74C73-RbQNIyZg"; // ⚠️ ROTATE THIS KEY NOW!
+        const API_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
+
+        const prompt = `
+  You are a Senior Venture Analyst and SDR Orchestrator. 
+  Analyze this lead from ${name} at ${company}: "${message}".
+
+  ### SCORING RUBRIC:
+  - HOT: Explicit budget (> $1k), urgent timeline (< 2 weeks), or deep technical pain points.
+  - WARM: Interest in a demo/deck, vague timeline, or general "exploring" intent.
+  - COLD: No clear objective, job seekers, or generic spam.
+
+  ### OUTPUT REQUIREMENTS:
+  Return ONLY a JSON object with:
+  {
+    "category": "HOT/WARM/COLD",
+    "confidence": 0-100,
+    "strategicAnalysis": "A 3-4 sentence deep dive into the lead's psychological intent, industry position, and why they are categorized this way.",
+    "budget": "Specific amount if found, otherwise 'Not specified - needs discovery'",
+    "timeline": "Specific date/duration, otherwise 'Flexible/Undetermined'",
+    "intentType": "Sales / Partnership / Technical Support / Spam",
+    "draftAction": "Specific high-value next step",
+    "emailSubject": "Personalized subject line",
+    "emailBody": "Professional 3-sentence outreach draft addressed to ${name}."
+  }
+`;
+
+        try {
+          const response = await fetch(API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+          });
+          const data = await response.json();
+          const responseText = data.candidates[0].content.parts[0].text;
+          const cleanJson = responseText.replace(/```json|```/g, "").trim();
+          return JSON.parse(cleanJson);
+        } catch (e) {
+          console.error("Logic Error:", e);
+          return {
+            category: "WARM",
+            draftAction: "Manual Review",
+            emailSubject: "Following up",
+            emailBody: "Hi, let's connect.",
+          };
+        }
+      }
+
+      async function processLead() {
+        const name = document.getElementById("leadName").value;
+        const company = document.getElementById("leadCompany").value;
+        const email = document.getElementById("leadEmail").value;
+        const message = document.getElementById("leadMsg").value;
+
+        if (!name || !message || !email)
+          return toast("Fill in all details", "error");
+        if (!contract)
+          return toast("Please connect your wallet first", "error");
+
+        const btn = document.getElementById("analyzeBtn");
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spin"></span> Processing Task...';
+
+        try {
+          // 1. EXECUTE AI ANALYSIS
+          const ai = await analyzeLeadAI(message, company);
+          displayUIResult(ai, name, company, email);
+
+          // 2. PREPARE ON-CHAIN AUDIT
+          document.getElementById("rchain").innerHTML =
+            "⏳ Broadcasting to Shardeum...";
+
+          // Ensure we don't pass 'undefined' to the contract
+          // We map 'strategicAnalysis' to the contract's 'reasoning' parameter
+          const category = ai.category || "COLD";
+          const reasoning = ai.strategicAnalysis || "No analysis provided";
+          const confidence = Math.round(ai.confidence || 0); // Must be a whole number (uint8)
+
+          // Bundle metadata for the 'leadData' string
+          const leadMetadata = JSON.stringify({
+            name,
+            email,
+            budget: ai.budget,
+            timeline: ai.timeline,
+          });
+
+          // 3. EXECUTE BLOCKCHAIN TRANSACTION
+          // We use a manual gasLimit to prevent the 850 SHM error
+          const tx = await contract.logDecision(
+            category,
+            reasoning,
+            confidence,
+            leadMetadata,
+            { gasLimit: 400000 },
+          );
+
+          document.getElementById(
+            "rchain",
+          ).innerHTML = `🔗 Pending: <a href="https://explorer-mezame.shardeum.org/tx/${tx.hash}" target="_blank" style="color:var(--accent)">View TX</a>`;
+
+          await tx.wait(); // Wait for block confirmation
+
+          document.getElementById(
+            "rchain",
+          ).innerHTML = `✅ Audit Logged: <a href="https://explorer-mezame.shardeum.org/tx/${tx.hash}" target="_blank" style="color:var(--green)">Proof of Work</a>`;
+
+          addLogToUI(ai, name, company);
+          updateStats(ai.category);
+          toast("Automation Complete & Verified", "success");
+        } catch (e) {
+          console.error("Agent Logic Error:", e);
+          document.getElementById("rchain").innerHTML =
+            "<span style='color:var(--hot)'>⚠️ On-chain Log Failed</span>";
+          toast("Transaction Cancelled or Failed", "error");
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = "Analyze Lead";
+        }
+      }
+
+      async function debugModels() {
+        const API_KEY = "AIzaSyBVU7RVH6KJJCgjRXfWs74C73-RbQNIyZg"; // Ensure this is a FRESH key
+        const URL = `https://generativelanguage.googleapis.com/v1beta/models?key=${API_KEY}`;
+
+        try {
+          const response = await fetch(URL);
+          const data = await response.json();
+
+          // If there's an error, it will be in data.error
+          if (data.error) {
+            console.error("API Error Code:", data.error.code);
+            console.error("API Error Message:", data.error.message);
+            return;
+          }
+
+          if (data.models) {
+            console.log("--- SUCCESS! AVAILABLE MODELS ---");
+            data.models.forEach((m) => {
+              // We only care about models that support 'generateContent'
+              if (m.supportedGenerationMethods.includes("generateContent")) {
+                console.log(m.name.replace("models/", ""));
+              }
+            });
+          } else {
+            console.log("Response received but no models found:", data);
+          }
+        } catch (e) {
+          console.error("Connection Failed:", e);
+        }
+      }
+      debugModels();
+      debugModels();
+
+      function displayUIResult(ai, name, company, email) {
+        let cleanBody = ai.emailBody
+          .replace(/\[leadname\]/gi, name)
+          .replace(/\[name\]/gi, name)
+          .replace(/\[company\]/gi, company)
+          .replace(/\[founder\]/gi, "Vishwas");
+
+        document.getElementById("resultBox").style.display = "block";
+
+        const catEl = document.getElementById("rcat");
+        catEl.textContent = ai.category;
+        catEl.className = ai.category;
+
+        document.getElementById(
+          "rconf",
+        ).textContent = `${ai.confidence}% Confidence`;
+
+        const gmailLink = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(
+          email,
+        )}&su=${encodeURIComponent(ai.emailSubject)}&body=${encodeURIComponent(
+          cleanBody,
+        )}`;
+
+        document.getElementById("rreason").innerHTML = `
+    <div style="margin-bottom:20px; border-bottom:1px solid var(--border); padding-bottom:15px;">
+        <span style="font-family:var(--mono); font-size:0.65rem; color:var(--accent);">// STRATEGIC ANALYSIS</span>
+        <p style="color:var(--text); font-size:0.92rem; line-height:1.6; margin-top:8px;">${ai.strategicAnalysis}</p>
+        
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px;">
+            <div style="background:var(--surface2); padding:10px; border-radius:8px;">
+                <small style="color:var(--muted); font-family:var(--mono); font-size:0.6rem;">EST. BUDGET</small>
+                <div style="color:var(--green); font-weight:700;">${ai.budget}</div>
+            </div>
+            <div style="background:var(--surface2); padding:10px; border-radius:8px;">
+                <small style="color:var(--muted); font-family:var(--mono); font-size:0.6rem;">TARGET TIMELINE</small>
+                <div style="color:var(--warm); font-weight:700;">${ai.timeline}</div>
+            </div>
+        </div>
     </div>
-  </section>
-</main>
 
-<script>
-  // UPDATE THIS with your deployed DecisionLogger address
-  const CONTRACT_ADDRESS = "PASTE_YOUR_DEPLOYED_ADDRESS_HERE";
-  
-  const DECISION_LOGGER_ABI = [
-    "function logDecision(string category, string reasoning, uint8 confidence, string leadData) external returns (uint256)",
-    "event DecisionLogged(uint256 indexed id, string category, string reasoning, uint8 confidence, string leadData, address indexed logger, uint256 timestamp)"
-  ];
+    <div style="background:var(--surface2); padding:20px; border-radius:12px; border:1px solid var(--accent); box-shadow: 0 0 15px rgba(232, 255, 71, 0.1);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <span style="font-family:var(--mono); font-size:0.65rem; color:var(--muted);">INTENT: ${ai.intentType}</span>
+            <span class="lbadge ${ai.category}" style="font-size:0.6rem;">${ai.draftAction}</span>
+        </div>
+        
+        <div style="background:rgba(0,0,0,0.3); padding:12px; border-radius:6px; margin-bottom:18px;">
+            <p style="font-style:italic; font-size:0.88rem; color:var(--text); line-height:1.5;">"${cleanBody}"</p>
+        </div>
+        
+        <a href="${gmailLink}" target="_blank" style="text-decoration:none;">
+            <button style="width:100%; padding:14px; background:var(--accent); color:#0a0a0f; border:none; border-radius:10px; font-weight:800; cursor:pointer; font-family:var(--font); display:flex; align-items:center; justify-content:center; gap:10px;">
+                ✉️ Execute Automated Outreach
+            </button>
+        </a>
+    </div>
+  `;
+      }
 
-  let provider, signer, account, contract;
+      function addLogToUI(ai, name, company) {
+        const list = document.getElementById("llist");
+        if (list.querySelector(".lempty")) list.innerHTML = "";
+        const id = "e" + Date.now();
+        const el = document.createElement("div");
+        el.className = "litem " + ai.category;
+        el.id = id;
+        el.innerHTML = `
+      <div class="lhead" onclick="document.getElementById('${id}').classList.toggle('open')">
+        <span class="lbadge ${ai.category}">${ai.category}</span>
+        <span style="font-weight:700;">${name} (${company})</span>
+        <span style="font-family:var(--mono); font-size:0.6rem; color:var(--muted);">${new Date().toLocaleTimeString()}</span>
+      </div>
+      <div class="lbody"><strong>Action:</strong> ${
+        ai.draftAction
+      }<br><em>Traceability ID: ${id}</em></div>
+    `;
+        list.prepend(el);
+      }
 
-  async function connectWallet() {
-    if (!window.ethereum) return alert("Please install MetaMask");
-    try {
-      await window.ethereum.request({ method: 'eth_requestAccounts' });
-      provider = new ethers.BrowserProvider(window.ethereum);
-      signer = await provider.getSigner();
-      account = await signer.getAddress();
-      
-      const btn = document.getElementById('connectBtn');
-      btn.textContent = account.slice(0,6) + "..." + account.slice(-4);
-      btn.classList.add('connected');
-      
-      contract = new ethers.Contract(CONTRACT_ADDRESS, DECISION_LOGGER_ABI, signer);
-    } catch (e) { console.error(e); }
-  }
+      function updateStats(cat) {
+        stats[cat]++;
+        document.getElementById("mHot").textContent = stats.HOT;
+        document.getElementById("mWarm").textContent = stats.WARM;
+        document.getElementById("mCold").textContent = stats.COLD;
+        document.getElementById("mTime").textContent =
+          (stats.HOT + stats.WARM + stats.COLD) * 8 + "m";
+      }
 
-  async function processLead() {
-    if (!contract) return alert("Connect wallet first!");
-    
-    const name = document.getElementById('leadName').value;
-    const company = document.getElementById('leadCompany').value;
-    const message = document.getElementById('leadMessage').value;
-
-    if (!name || !message) return alert("Please fill in lead details");
-
-    document.getElementById('processBtn').disabled = true;
-    document.getElementById('processBtn').textContent = "AI Scoring Lead...";
-
-    try {
-      // Logic: Simulate AI Lead Scoring (In production, call Claude API here)
-      // This mimics the AI scoring a high-intent lead as HOT
-      const category = message.toLowerCase().includes("urgent") || message.toLowerCase().includes("budget") ? "HOT" : "WARM";
-      const reasoning = `Lead from ${company} shows high intent based on service inquiry.`;
-      const confidence = 85;
-      const leadData = JSON.stringify({ name, company, message });
-
-      // Update UI with AI results
-      displayAIResult(category, confidence, reasoning);
-
-      // Log to Blockchain
-      document.getElementById('txStatus').textContent = "🔄 Signing Transaction...";
-      const tx = await contract.logDecision(category, reasoning, confidence, leadData);
-      
-      document.getElementById('txStatus').textContent = "⛏️ Mining on Shardeum...";
-      const receipt = await tx.wait();
-      
-      document.getElementById('txStatus').textContent = `✅ Logged! ID: ${receipt.logs[0].topics[1] || 'Success'}`;
-      addLogToUI(category, reasoning);
-
-    } catch (e) {
-      console.error(e);
-      document.getElementById('txStatus').textContent = "❌ Error: " + (e.reason || "Transaction failed");
-    } finally {
-      document.getElementById('processBtn').disabled = false;
-      document.getElementById('processBtn').textContent = "Automate & Log to Shardeum";
-    }
-  }
-
-  function displayAIResult(cat, conf, reason) {
-    const panel = document.getElementById('resultPanel');
-    const catBadge = document.getElementById('resultCategory');
-    panel.style.display = 'block';
-    catBadge.textContent = cat;
-    catBadge.className = 'badge ' + cat;
-    document.getElementById('resultConfidence').textContent = `Confidence: ${conf}%`;
-    document.getElementById('resultReasoning').textContent = reason;
-  }
-
-  function addLogToUI(cat, reason) {
-    const list = document.getElementById('logList');
-    if (list.innerHTML.includes("No logs found")) list.innerHTML = "";
-    
-    const item = document.createElement('div');
-    item.className = 'log-item';
-    item.innerHTML = `<strong>${cat}</strong>: ${reason}<br><small style="color:#64748b">${new Date().toLocaleTimeString()}</small>`;
-    list.prepend(item);
-  }
-</script>
-</body>
+      function toast(msg, type) {
+        const el = document.getElementById("toast");
+        el.textContent = msg;
+        el.className = "show";
+        setTimeout(() => (el.className = ""), 3000);
+      }
+    </script>
+  </body>
 </html>
