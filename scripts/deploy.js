@@ -12,32 +12,22 @@ async function main() {
   console.log(`Balance:  ${hre.ethers.formatEther(balance)} SHM`);
   console.log("=".repeat(50));
 
-  // ── Deploy SimpleStorage ─────────────────────────────────────────────────
-  console.log("\n[1/2] Deploying SimpleStorage...");
-  const SimpleStorage = await hre.ethers.getContractFactory("SimpleStorage");
-  const simpleStorage = await SimpleStorage.deploy(42);
-  await simpleStorage.waitForDeployment();
-  const ssAddress = await simpleStorage.getAddress();
-  console.log(`  SimpleStorage deployed to: ${ssAddress}`);
-
-  // ── Deploy ShardeumToken ─────────────────────────────────────────────────
-  console.log("\n[2/2] Deploying ShardeumToken...");
-  const ShardeumToken = await hre.ethers.getContractFactory("ShardeumToken");
-  const token = await ShardeumToken.deploy("Shardeum Token", "SHT", 1_000_000);
-  await token.waitForDeployment();
-  const tokenAddress = await token.getAddress();
-  console.log(`  ShardeumToken deployed to: ${tokenAddress}`);
+  // ── Deploy DecisionLogger ─────────────────────────────────────────────────
+  console.log("\n[1/1] Deploying DecisionLogger...");
+  const DecisionLogger = await hre.ethers.getContractFactory("DecisionLogger");
+  const decisionLogger = await DecisionLogger.deploy();
+  await decisionLogger.waitForDeployment();
+  const dlAddress = await decisionLogger.getAddress();
+  console.log(`  DecisionLogger deployed to: ${dlAddress}`);
 
   // ── Summary ──────────────────────────────────────────────────────────────
-  const explorerBase =
-    network === "shardeum_mainnet"
-      ? "https://explorer.shardeum.org"
-      : "https://explorer-mezame.shardeum.org";
+  const explorerBase = "https://explorer-mezame.shardeum.org";
 
   console.log("\n" + "=".repeat(50));
   console.log("Deployment complete!");
-  console.log(`  SimpleStorage: ${explorerBase}/address/${ssAddress}`);
-  console.log(`  ShardeumToken: ${explorerBase}/address/${tokenAddress}`);
+  console.log(`  DecisionLogger: ${explorerBase}/address/${dlAddress}`);
+  console.log("\n  IMPORTANT — paste this address into the frontend:");
+  console.log(`  CONTRACT_ADDRESS = "${dlAddress}"`);
   console.log("=".repeat(50));
 }
 
